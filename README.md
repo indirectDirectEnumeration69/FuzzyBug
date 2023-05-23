@@ -1,2 +1,2 @@
 # FuzzyBug
-Soon to be extensive multilayer website vulnerability scanner
+Soon to be extensive multi-layer website vulnerability scanner
