@@ -3,6 +3,7 @@
 
 #include <queue>
 #include <mutex>
+#include <shared_mutex>
 #include <condition_variable>
 #include <thread>
 #include <functional>
@@ -15,7 +16,7 @@
 #include <unordered_map>
 
 extern std::unordered_map<std::string, std::string> urlResponses;
-extern std::mutex responseMutex;
+extern std::shared_mutex responseMutex;
 
 struct Task {
     std::function<void()> func;
