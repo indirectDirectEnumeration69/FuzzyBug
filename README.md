@@ -7,3 +7,4 @@ Soon to be extensive multi-layer website vulnerability scanner
 - fixing and sorting web response data.
 - fixing connection logic (going to further enhance connection establishment and redirects)
 - payload mechanisms + pattern matching algo implementing . 
+-reducing time complexity and thread overheads. 
