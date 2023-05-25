@@ -21,7 +21,7 @@ struct datasortType {
         }
     }
 
-    void parse_html(const std::string& html, std::unordered_set<std::string>& tags) {
+    void parse_html(const std::string& html, std::unordered_map<std::string, std::vector<std::unordered_map<std::string, std::string>>>& tags) {
         GumboOutput* output = gumbo_parse(html.c_str());
 
         traverse(output->root, tags);
@@ -29,13 +29,19 @@ struct datasortType {
         gumbo_destroy_output(&kGumboDefaultOptions, output);
     }
 
-    void traverse(GumboNode* node, std::unordered_set<std::string>& tags) {
+    void traverse(GumboNode* node, std::unordered_map<std::string, std::vector<std::unordered_map<std::string, std::string>>>& tags) {
         if (node->type != GUMBO_NODE_ELEMENT) {
             return;
         }
 
-        tags.insert(gumbo_normalized_tagname(node->v.element.tag));
+        std::unordered_map<std::string, std::string> attributes;
+        GumboAttribute* attr;
+        for (unsigned int i = 0; i < node->v.element.attributes.length; ++i) {
+            attr = (GumboAttribute*)node->v.element.attributes.data[i];
+            attributes[attr->name] = attr->value;
+        }
 
+        tags[gumbo_normalized_tagname(node->v.element.tag)].push_back(attributes);
         GumboVector* children = &node->v.element.children;
         for (unsigned int i = 0; i < children->length; ++i) {
             traverse(static_cast<GumboNode*>(children->data[i]), tags);
@@ -44,20 +50,32 @@ struct datasortType {
 
     void processResponse(const std::string& url, const std::string& response) {
         std::thread t([this, url, response]() {
-            std::unordered_set<std::string> tags;
+            std::unordered_map<std::string, std::vector<std::unordered_map<std::string, std::string>>> tags;
             parse_html(response, tags);
 
+            std::vector<std::string> importantTags = { "script", "a", "input", "form" };
+            std::unordered_map<std::string, std::vector<std::unordered_map<std::string, std::string>>> importantTagsInfo;
+
+            for (const auto& importantTag : importantTags) {
+                auto tagInfoIter = tags.find(importantTag);
+                if (tagInfoIter != tags.end()) {
+                    importantTagsInfo.insert(*tagInfoIter);
+                }
+            }
+
             std::lock_guard<std::shared_mutex> lock(responseMutex);
-            tagsInResponses[url] = tags;
+            tagsInResponses[url] = importantTagsInfo;
             });
 
         t.detach();
     }
 
+
 public:
     Concurrency::concurrent_vector<std::string> URL;
     Concurrency::concurrent_unordered_map<std::string, std::string> UrlResponses_requests;
-    Concurrency::concurrent_unordered_map<std::string, std::unordered_set<std::string>> tagsInResponses;
+    Concurrency::concurrent_unordered_map<std::string, std::unordered_map<std::string, std::vector<std::unordered_map<std::string, std::string>>>> tagsInResponses;
+
 };
 
 class DataSorter {
@@ -75,14 +93,20 @@ public:
 
             auto tagIter = dataSorter.tagsInResponses.find(url);
             if (tagIter != dataSorter.tagsInResponses.end()) {
-                std::cout << "Tags: ";
                 for (const auto& tag : tagIter->second) {
-                    std::cout << tag << ' ';
+                    std::cout << "Tag: " << tag.first << std::endl;
+                    for (const auto& attributes : tag.second) {
+                        std::cout << "Attributes: " << std::endl;
+                        for (const auto& attribute : attributes) {
+                            std::cout << attribute.first << ": " << attribute.second << std::endl;
+                        }
+                    }
                 }
             }
             std::cout << std::endl;
         }
     }
+
 
 private:
     datasortType dataSorter;
