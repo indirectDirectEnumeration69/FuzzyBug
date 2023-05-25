@@ -1,4 +1,3 @@
-#pragma once
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -48,7 +47,6 @@ public:
         }
         condVar_.notify_one();
     }
-
 private:
     void WorkerThread() {
         while (true) {
@@ -67,59 +65,75 @@ private:
             task.func();
         }
     }
-
     std::vector<std::thread> threads_;
     std::priority_queue<Task> taskQueue_;
     std::mutex queueMutex_;
     std::condition_variable condVar_;
     bool stop_ = false;
 };
-
-std::string Normalize(const std::string& userInput) {
-    std::string normalizedInput(userInput.size(), '\0');
-    std::transform(userInput.begin(), userInput.end(), normalizedInput.begin(), ::tolower);
-    return normalizedInput;
-}
-
+bool isValidUrl(const std::string& url) {return (url.find("http://") == 0 || url.find("https://") == 0);}
 void StartFuzzer() {
-    ThreadPool pool(1);
+    ThreadPool pool(10);
     std::vector<std::string> urls;
-    std::mutex urlMutex;
+    std::mutex urlMutex, ActiveThreadsMutex;
+    std::vector<std::thread::id> ActiveThreads = {};
 
     pool.EnqueueTask({ [&]() {
+        auto id = std::this_thread::get_id();
+        {
+            std::lock_guard<std::mutex> lock(ActiveThreadsMutex);
+            ActiveThreads.push_back(id);
+        }
         std::string userInput;
         std::cout << "Do you wish to start the fuzzer? (yes/no)\n";
         std::cin >> userInput;
-        userInput = Normalize(userInput);
 
-        if (userInput == "yes") {
+        if (userInput == "yes" || userInput == "Yes") {
             std::cout << "Starting fuzzer...\n";
 
             for (int i = 0; i < 3; i++) {
                 pool.EnqueueTask({ [&]() {
-                  
+                    auto innerId = std::this_thread::get_id();
+                    {
+                        std::lock_guard<std::mutex> lock(ActiveThreadsMutex);
+                        ActiveThreads.push_back(innerId);
+                    }
                 }, 1});
             }
-
             std::cout << "Enter URL:\n";
             std::cin >> userInput;
-            userInput = Normalize(userInput);
+            if (!isValidUrl(userInput)) {
+                std::cerr << "Invalid URL!" << std::endl;
+                return;
+            } 
+            std::string url = userInput; 
             {
-                std::lock_guard<std::mutex> lock(urlMutex);
-                urls.push_back(userInput);
+                std::lock_guard<std::mutex> lock(urlMutex); 
+                urls.push_back(userInput); 
             }
 
-            pool.EnqueueTask({ [&]() {
-                CURL* curl = curl_easy_init();
-                if (curl) {
-                    CURLcode res;
-                    curl_easy_setopt(curl, CURLOPT_URL, userInput.c_str());
-                    res = curl_easy_perform(curl);
-                    if (res != CURLE_OK)
-                        std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-                    curl_easy_cleanup(curl);
-                }
-            }, 1});
-        }
-    }, 1 });
+         pool.EnqueueTask({ [url]() {
+          CURL* curl = curl_easy_init();
+         if (curl) {
+            CURLcode res;
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L); 
+            curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, 120L); 
+            curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
+         try {
+             std::cout << "\n--- " << url << " ---\n";
+             std::cout << "\nResponse:\n";
+             res = curl_easy_perform(curl);
+             if (res != CURLE_OK) {
+                 throw std::runtime_error("Couldn't connect, error occurred: " + std::string(curl_easy_strerror(res)));
+             }
+             std::cout << "\n--- End of response ---\n"; 
+         }
+         catch (const std::exception& e) {
+             std::cerr << e.what() << std::endl;
+         }
+         curl_easy_cleanup(curl);
+         }}, 1 });}
+     }, 1 });
 }
+
