@@ -1,49 +1,75 @@
-#pragma once
 #include "Fuzzer.h"
-#include <concurrent_vector.h>;
+#include <concurrent_vector.h>
 #include <concurrent_unordered_map.h>
+#include <unordered_set>
+#include "pugixml.hpp"
 
-
-int count = 0;
-struct clockCount {
-	clockCount() {
-		count++;
-	}
-	~clockCount() {
-    
-    
-    };
-};
-
+extern std::mutex responseMutex;
 
 struct datasortType {
-    char characters = 'a' - 'Z';
-    std::string wordsfromChars;
-    int Numbers = 0 - 9;
-
     datasortType() {
         std::lock_guard<std::mutex> lock(responseMutex);
         for (const auto& pair : urlResponses) {
-            url = pair.first;
-            response = pair.second;
-            std::cout << "This is the response stored: " + response + "\n" << std::endl;
-            URL.push_back(url);
-            UrlResponses_requests[url] = response;//stores the key into the headers local map
-            Response.push_back(response);
+            URL.push_back(pair.first);
+            UrlResponses_requests[pair.first] = pair.second;
         }
-       urlResponses.clear();//urlresponse is cleared as its better to store in one place at a time.
+        urlResponses.clear();
 
-
+        for (const auto& url : URL) {
+            processResponse(url, UrlResponses_requests[url]);
+        }
     }
-    ~datasortType() {}
 
-    private: 
-        clockCount cc;
-        std::string url;
-        std::string response;
-        Concurrency::concurrent_vector<std::string> URL;
-        Concurrency::concurrent_vector<std::string> Response;
-        Concurrency::concurrent_unordered_map<std::string, std::string> UrlResponses_requests;//change for ordered storage of url+responses.
+    void processResponse(const std::string& url, const std::string& response) {
+        std::thread t([this, url, response]() {
+            pugi::xml_document doc;
+            pugi::xml_parse_result result = doc.load_string(response.c_str());
+
+            if (result) {
+                std::unordered_set<std::string> tags;
+
+                for (pugi::xml_node node = doc.first_child(); node; node = node.next_sibling()) {
+                    tags.insert(node.name());
+                }
+
+                std::lock_guard<std::mutex> lock(responseMutex);
+                tagsInResponses[url] = tags;
+            }
+            else {
+                std::cout << "Error parsing response from " << url << std::endl;
+            }
+            });
+
+        t.detach();
+    }
+
+public:
+    Concurrency::concurrent_vector<std::string> URL;
+    Concurrency::concurrent_unordered_map<std::string, std::string> UrlResponses_requests;
+    Concurrency::concurrent_unordered_map<std::string, std::unordered_set<std::string>> tagsInResponses;
+
+private:
+
+    //will soon add the privates. 
 };
 
+class DataSorter {
+public:
+    DataSorter() : dataSorter() {}
+
+    void printData() const {
+        for (const auto& url : dataSorter.URL) {
+            std::cout << "URL: " << url << std::endl;
+            std::cout << "Response: " << dataSorter.UrlResponses_requests.at(url) << std::endl;
+            std::cout << "Tags: ";
+            for (const auto& tag : dataSorter.tagsInResponses.at(url)) {
+                std::cout << tag << ' ';
+            }
+            std::cout << std::endl;
+        }
+    }
+
+private:
+    datasortType dataSorter;
+};
 

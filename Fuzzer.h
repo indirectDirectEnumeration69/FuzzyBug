@@ -85,85 +85,52 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* use
     userp->append((char*)contents, totalSize);
     return totalSize;
 }
-
 void StartFuzzer() {
     ThreadPool pool(10);
     std::vector<std::string> urls;
-    std::mutex urlMutex, ActiveThreadsMutex;
-    std::vector<std::thread::id> ActiveThreads = {};
-     
+
     pool.EnqueueTask({ [&]() {
-        auto id = std::this_thread::get_id();
-        {
-            std::lock_guard<std::mutex> lock(ActiveThreadsMutex);
-            ActiveThreads.push_back(id);
-        }
         std::string userInput;
         std::cout << "Do you wish to start the fuzzer? (yes/no)\n";
         std::cin >> userInput;
 
         if (userInput == "yes" || userInput == "Yes") {
             std::cout << "Starting fuzzer...\n";
-
-            for (int i = 0; i < 3; i++) {
-                pool.EnqueueTask({ [&]() {
-                    auto innerId = std::this_thread::get_id();
-                    {
-                        std::lock_guard<std::mutex> lock(ActiveThreadsMutex);
-                        ActiveThreads.push_back(innerId);
-                    }
-                }, 1 });
-            }
             std::cout << "Enter URL:\n";
             std::cin >> userInput;
+
             if (!isValidUrl(userInput)) {
                 std::cerr << "Invalid URL!" << std::endl;
                 return;
             }
             std::string url = userInput;
-            {
-                std::lock_guard<std::mutex> lock(urlMutex);
-                urls.push_back(userInput);
-            }
+            urls.push_back(userInput);
 
             pool.EnqueueTask({ [url]() {
-           CURL* curl = curl_easy_init();
-           if (curl) {
-               CURLcode res;
-               std::string response;
-               curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-               curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-               curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-               curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
-               curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, 120L);
-               curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
-               try {
-                   std::cout << "\n--- " << url << " ---\n";
+               CURL* curl = curl_easy_init();
+               if (curl) {
+                   CURLcode res;
+                   std::string response;
+                   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+                   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+                   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+                   curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+                   curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, 120L);
+                   curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
                    res = curl_easy_perform(curl);
                    if (res != CURLE_OK) {
-                       throw std::runtime_error("Couldn't connect, error occurred: " + std::string(curl_easy_strerror(res)));
+                       std::cerr << "Couldn't connect, error occurred: " << curl_easy_strerror(res) << "\n";
+                       curl_easy_cleanup(curl);
+                       return;
                    }
-                   {
-                       std::lock_guard<std::mutex> lock(responseMutex);
-                       urlResponses[url] = response;
-                   }
-                   std::cout << "\nResponse:\n" << response << "\n";
-                   std::cout << "\n--- End of response ---\n";
-               
-                   std::cout << "\n Url and response has been stored! \n"<<std::endl;
-                   for (const auto& pair : urlResponses) {
-                       std::cout << "URL: " << pair.first << "\n";
-                   }
-
+                   responseMutex.lock();
+                   urlResponses[url] = response;
+                   responseMutex.unlock();
+                   curl_easy_cleanup(curl);
                }
-
-               catch (const std::exception& e) {
-                   std::cerr << e.what() << std::endl;
-               }
-               curl_easy_cleanup(curl);
-           }
-       }, 1 });
+           }, 1 });
         }
-     }, 1 });
+    }, 1 });
 }
+
 #endif

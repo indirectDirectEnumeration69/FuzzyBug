@@ -5,11 +5,11 @@
 #include "sortation.h"
 
 std::unordered_map<std::string, std::string> urlResponses;
-std::mutex responseMutex;
+std::mutex responseMutex; 
 
 int main()
 {
     StartFuzzer();
-    datasortType* NewDataLog = new datasortType;
-    delete NewDataLog;
+    DataSorter sorter;
+    sorter.printData();
 }
