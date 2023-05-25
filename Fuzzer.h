@@ -1,3 +1,6 @@
+#ifndef FUZZER_H
+#define FUZZER_H
+
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -11,9 +14,8 @@
 #include <curl/curl.h>
 #include <unordered_map>
 
-
-std::unordered_map<std::string, std::string> urlResponses;
-std::mutex responseMutex;
+extern std::unordered_map<std::string, std::string> urlResponses;
+extern std::mutex responseMutex;
 
 struct Task {
     std::function<void()> func;
@@ -148,9 +150,9 @@ void StartFuzzer() {
                    std::cout << "\nResponse:\n" << response << "\n";
                    std::cout << "\n--- End of response ---\n";
                
-                   std::cout << "\n [Update] Url and response has been stored!\n"<<std::endl;
+                   std::cout << "\n Url and response has been stored! \n"<<std::endl;
                    for (const auto& pair : urlResponses) {
-                   std::cout << "URL: " << pair.first << "\n";
+                       std::cout << "URL: " << pair.first << "\n";
                    }
 
                }
@@ -164,4 +166,4 @@ void StartFuzzer() {
         }
      }, 1 });
 }
-
+#endif
