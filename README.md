@@ -11,5 +11,5 @@ Soon to be extensive multi-layer website vulnerability scanner
 -reducing time complexity and thread overheads. - O(n) where possible.
 
 
-- will soon set up a data encryption system with sock5 proxy redirects for any web communications.
-- need to fully look through vm logic and makw sure its as full proof as possible before open enviroment use.
+- will soon set up a data encryption system with socke5 proxy redirects for any web communications.
+- need to fully look through vm logic and make sure its as full proof as possible before open enviroment use.
