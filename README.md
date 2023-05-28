@@ -5,6 +5,8 @@ Soon to be extensive multi-layer website vulnerability scanner
 
 Urgent: *Dependencie mechanism*
 
+- Adding openSll
+
 bugs & semantic error list:
 
 -
