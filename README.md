@@ -12,4 +12,7 @@ Soon to be extensive multi-layer website vulnerability scanner
 
 
 - will soon set up a data encryption system with socks5 proxy redirects for any web communications.
+-- issue will be response and request times due to relays.(compromise open relay servers?) .
+
+
 - need to fully look through vm logic and make sure its as full proof as possible before open enviroment use.
