@@ -2,6 +2,18 @@
 Soon to be extensive multi-layer website vulnerability scanner
 
 
+bugs & semantic error list:
+
+-
+-
+-
+-
+-
+
+
+
+
+
 
 --May not use gumbo in the future.
 - fixing and sorting web response data.
