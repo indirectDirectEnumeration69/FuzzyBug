@@ -16,3 +16,22 @@ Soon to be extensive multi-layer website vulnerability scanner
 
 
 - need to fully look through vm logic and make sure its as full proof as possible before open enviroment use.
+
+
+
+Creation date: 26/05/2023.
+
+
+Ideas:
+
+
+
+
+Program Logic control flow: 
+
+
+->     ->    ->   ->   
+
+
+
+-----------------------------
