@@ -22,7 +22,7 @@ int main()
                 for (auto& file : vmDetector.VmFilesFound) {
 					logMessage(file + '\n');
 				}
-                for (auto& keys : vmDetector.VmDllsFound) {
+                for (auto& keys : vmDetector.VmKeysFound) {
                     logMessage(keys + '\n');
                 }
                 exit(0);
