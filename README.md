@@ -58,6 +58,20 @@ Ideas:
 -
 
 
+Additional Langauges to use (explicit use case for each - including for a eventual gui and ui set up , remote server hosting) :
+
+-Python.
+- C
+- Backend(PHP,SQL)+front end(JS) ,JSON,ajax etc.
+- 
+-
+-
+-
+
+
+
+
+
 
 Program Logic control flow: 
 
