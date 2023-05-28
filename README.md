@@ -2,6 +2,9 @@
 Soon to be extensive multi-layer website vulnerability scanner
 
 
+
+Urgent: *Dependencie mechanism*
+
 bugs & semantic error list:
 
 -
