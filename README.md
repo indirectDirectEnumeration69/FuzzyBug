@@ -14,7 +14,7 @@ bugs & semantic error list:
 
 
 
-
+---------
 --May not use gumbo in the future.
 - fixing and sorting web response data.
 - fixing connection logic (going to further enhance connection establishment and redirects)
@@ -30,7 +30,7 @@ bugs & semantic error list:
 - need to fully look through vm logic and make sure its as full proof as possible before open enviroment use.
 
 
-
+-------
 Payload logic/dynamic creation (enviropment sets / payload variants):
 
 -
