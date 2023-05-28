@@ -18,11 +18,27 @@ Soon to be extensive multi-layer website vulnerability scanner
 - need to fully look through vm logic and make sure its as full proof as possible before open enviroment use.
 
 
+
+Payload logic/dynamic creation (enviropment sets / payload variants):
+
+-
+-
+-
+-
+-
+
+
+Algorithms:
+-
+-
+-
+-
+
 Ideas:
-
-
-
-
+-
+-
+-
+-
 Program Logic control flow: 
 
 
