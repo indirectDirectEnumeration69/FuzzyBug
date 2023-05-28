@@ -7,8 +7,6 @@
 #include <mutex>
 #include <windows.h>
 
-#include <windows.h>
-
 class SystemInfo {
 public:
     SystemInfo() {
