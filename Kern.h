@@ -5,6 +5,9 @@
 #include <sstream>
 #include <thread>
 #include <mutex>
+#include <windows.h>
+
+#include <windows.h>
 
 class SystemInfo {
 public:
@@ -23,6 +26,41 @@ public:
     std::map<std::string, std::string> Obtain() const {
         std::lock_guard<std::mutex> lock(infoMutex);
         return infoMap;
+    }
+
+    void StartProcess(const std::string& processName) {
+        STARTUPINFO si;
+        PROCESS_INFORMATION pi;
+
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        ZeroMemory(&pi, sizeof(pi));
+
+        // Start the child process. 
+        std::wstring wProcessName = std::wstring(processName.begin(), processName.end());
+        if (!CreateProcess(
+            NULL,                          
+            const_cast<LPWSTR>(wProcessName.c_str()),
+            NULL,                           
+            NULL,                           
+            FALSE,                          
+            CREATE_SUSPENDED,               
+            NULL,                           
+            NULL,                           
+            &si,                            
+            &pi                             
+        ))
+        {
+            printf("CreateProcess failed (%d).\n", GetLastError());
+            return;
+        }
+        // Resume the child process.
+        if (ResumeThread(pi.hThread) == -1) {
+            printf("ResumeThread failed (%d).\n", GetLastError());
+            return;
+        }
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
     }
 
 private:
@@ -52,5 +90,3 @@ private:
     std::thread updateThread;
     bool running;
 };
-
-

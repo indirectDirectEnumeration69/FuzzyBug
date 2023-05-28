@@ -93,7 +93,7 @@ void StartFuzzer() {
     pool.EnqueueTask({ [&]() {
         std::string userInput;
         std::cout << "Do you wish to start the fuzzer? (yes/no)\n";
-        std::cin >> userInput;
+        std::cin >> userInput  ;
 
         if (userInput == "yes" || userInput == "Yes") {
             std::cout << "Starting fuzzer...\n";
