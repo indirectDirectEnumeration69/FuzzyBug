@@ -25,6 +25,11 @@ Payload logic/dynamic creation (enviropment sets / payload variants):
 -
 -
 -
+
+
+USE CASES: 
+-
+-
 -
 
 
