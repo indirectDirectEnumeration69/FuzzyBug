@@ -8,8 +8,7 @@
 std::unordered_map<std::string, std::string> urlResponses;
 std::shared_mutex responseMutex;
 int main()
-{
-    VMDetector vmDetector; 
+{   VMDetector vmDetector; 
     VMStatus vmStatus = vmDetector.is_in_vm(); 
     switch (vmStatus) {
 
