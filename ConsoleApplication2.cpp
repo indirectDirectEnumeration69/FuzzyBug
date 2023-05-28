@@ -4,7 +4,7 @@
 #include "Fuzzer.h"
 #include "sortation.h"
 #include "Awareness.h"
-
+#include "Logs.h"
 std::unordered_map<std::string, std::string> urlResponses;
 std::shared_mutex responseMutex;
 int main()
@@ -15,8 +15,18 @@ int main()
 
 
         case VMStatus::inVM:
-			std::cout << "VM HAS BEEN DETECTED EXITING" << std::endl;
-            exit(0);
+			std::cout << "VM HAS BEEN DETECTED EXITING.." << std::endl;
+            
+            if (!vmDetector.VmFilesFound.empty() || !vmDetector.VmKeysFound.empty()) {
+                logMessage("Virtual machine DETECTED!'\n'"); //will be sent to server with hardware id mapped to user.
+                for (auto& file : vmDetector.VmFilesFound) {
+					logMessage(file + '\n');
+				}
+                for (auto& keys : vmDetector.VmDllsFound) {
+                    logMessage(keys + '\n');
+                }
+                exit(0);
+            }
             //will add log files for investigation here , break out of vm logic? 
 			break;
 

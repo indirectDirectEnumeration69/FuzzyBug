@@ -85,6 +85,7 @@ public:
         }
         for (const char* key : vm_keys) {
             if (is_registry_key_present(key)) {
+                VmKeysFound.push_back(key); 
                 return true;
             }
         }
@@ -126,7 +127,7 @@ public:
             "C:\\windows\\system32\\vboxservice.exe",
             "C:\\windows\\system32\\vboxtray.exe",
             "C:\\windows\\system32\\VBoxControl.exe",
-        };
+        };//need to add other operating system file paths for unix.
         for (const char* file : vm_files) {
             DectectionDlls.push_back(file);
         }
@@ -134,6 +135,7 @@ public:
         for (const char* file : vm_files) {
             std::ifstream ifile(file);
             if (ifile.is_open()) {
+            VmFilesFound.push_back(file);
                 return true;
             }
         }
@@ -149,11 +151,14 @@ public:
         bool inVM = is_virtual_processor() || is_vm_by_registry() || is_vm_by_files() || is_under_debug();
         return inVM ? VMStatus::inVM : VMStatus::notVM;
     }
-
+    
+public:
+    std::vector<std::string> VmFilesFound;
+    std::vector<std::string> VmDllsFound;
+    std::vector<std::string> VmKeysFound;
  protected: 
      concurrency::concurrent_vector<const char*> DectectionDlls;
      concurrency::concurrent_vector<const char*> DectectionFiles;
-
 private:
     double expected_time;
 };
