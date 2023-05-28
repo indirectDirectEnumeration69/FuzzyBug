@@ -9,3 +9,6 @@ Soon to be extensive multi-layer website vulnerability scanner
 - payload mechanisms + pattern matching algo implementing .
 
 -reducing time complexity and thread overheads. 
+
+
+= will soon set up a data encryption system with sock5 proxy redirects for any web communications.
