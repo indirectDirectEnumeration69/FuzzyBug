@@ -33,7 +33,6 @@ public:
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
-        // Start the child process. 
         std::wstring wProcessName = std::wstring(processName.begin(), processName.end());
         if (!CreateProcess(
             NULL,                          
@@ -51,7 +50,6 @@ public:
             printf("CreateProcess failed (%d).\n", GetLastError());
             return;
         }
-        // Resume the child process.
         if (ResumeThread(pi.hThread) == -1) {
             printf("ResumeThread failed (%d).\n", GetLastError());
             return;
