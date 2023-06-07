@@ -2,6 +2,9 @@
 Soon to be extensive multi-layer website vulnerability scanner
 
 
+UPDATE: DOING SYSTEM KEY LOGIC NOW.
+
+
 
 Urgent: *Dependencie mechanism*
 
