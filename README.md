@@ -5,7 +5,7 @@ Soon to be extensive multi-layer website vulnerability scanner
 1. UPDATE: DOING SYSTEM KEY LOGIC NOW.
 
 
-2. 20/06/23/ UPDATE : using python for complex web functionality.
+2. 20/06/23/ UPDATE : using python for complex web functionality - database set up for this adding more robust logic (SQL).
 ---------------
 
 
